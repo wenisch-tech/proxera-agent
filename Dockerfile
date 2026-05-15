@@ -1,14 +1,16 @@
-FROM golang:1.24-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
 ARG VERSION=dev
 ARG BUILD_DATE=unknown
 ARG BUILD_REVISION=none
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /workspace
 
 COPY src/go.mod src/go.sum ./src/
 RUN go -C src mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go -C src build \
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go -C src build \
   -trimpath \
   -ldflags "-s -w -X github.com/wenisch-tech/proxera-client/internal/version.Version=${VERSION} -X github.com/wenisch-tech/proxera-client/internal/version.Commit=${BUILD_REVISION} -X github.com/wenisch-tech/proxera-client/internal/version.BuildDate=${BUILD_DATE}" \
   -o /out/proxera-client ./cmd/proxera-client
