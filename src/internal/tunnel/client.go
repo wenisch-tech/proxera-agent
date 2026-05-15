@@ -109,7 +109,7 @@ func (c *Client) runSession(ctx context.Context) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		errorsCh <- c.heartbeatLoop(ctx, outbound)
+		errorsCh <- c.heartbeatLoop(ctx, conn)
 	}()
 
 	select {
@@ -152,6 +152,9 @@ func (c *Client) readLoop(ctx context.Context, conn *websocket.Conn, outbound ch
 		case protocol.TypePing:
 			outbound <- protocol.Frame{Type: protocol.TypePong, CorrelationID: frame.CorrelationID}
 		case protocol.TypePong:
+			if err := conn.SetReadDeadline(time.Now().Add(c.cfg.HeartbeatTimeout)); err != nil {
+				return err
+			}
 			c.log.Debug("received pong", slog.String("correlationId", frame.CorrelationID))
 		case protocol.TypeRequest:
 			request, err := protocol.DecodePayload[protocol.RequestPayload](frame)
@@ -160,8 +163,8 @@ func (c *Client) readLoop(ctx context.Context, conn *websocket.Conn, outbound ch
 				continue
 			}
 
-			sem <- struct{}{}
 			go func(f protocol.Frame, req protocol.RequestPayload) {
+				sem <- struct{}{}
 				defer func() { <-sem }()
 				c.handleRequest(ctx, outbound, f.CorrelationID, req)
 			}(frame, request)
@@ -196,7 +199,13 @@ func (c *Client) writeLoop(ctx context.Context, conn *websocket.Conn, outbound <
 	}
 }
 
-func (c *Client) heartbeatLoop(ctx context.Context, outbound chan<- protocol.Frame) error {
+func (c *Client) heartbeatLoop(ctx context.Context, conn *websocket.Conn) error {
+	// Send an initial PONG immediately so the server's stale-session timer starts
+	// fresh rather than from the WebSocket handshake timestamp.
+	if err := conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(c.cfg.HeartbeatTimeout)); err != nil {
+		return fmt.Errorf("initial heartbeat pong failed: %w", err)
+	}
+
 	ticker := time.NewTicker(c.cfg.HeartbeatInterval)
 	defer ticker.Stop()
 	for {
@@ -204,8 +213,10 @@ func (c *Client) heartbeatLoop(ctx context.Context, outbound chan<- protocol.Fra
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			outbound <- protocol.Frame{Type: protocol.TypePing, CorrelationID: fmt.Sprintf("%d", time.Now().UTC().UnixNano())}
-			c.log.Debug("sent ping")
+			if err := conn.WriteControl(websocket.PongMessage, []byte{}, time.Now().Add(c.cfg.HeartbeatTimeout)); err != nil {
+				return fmt.Errorf("heartbeat pong failed: %w", err)
+			}
+			c.log.Debug("sent heartbeat pong")
 		}
 	}
 }
