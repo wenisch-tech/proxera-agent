@@ -60,6 +60,7 @@ jobs:
     needs:
       - versioning
       - test
+      - build
     if: ${{ github.event_name == 'push' }}
     permissions:
       contents: read
