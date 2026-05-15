@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -85,6 +86,21 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 			continue
 		}
 		responseHeaders[k] = values[0]
+	}
+
+	// Gzip-compress large unencoded bodies so the tunnel frame stays small.
+	// The server forwards Content-Encoding to the browser, which decompresses.
+	_, alreadyEncoded := responseHeaders["Content-Encoding"]
+	if !alreadyEncoded && len(responseBody) > 32*1024 {
+		var buf bytes.Buffer
+		gz := gzip.NewWriter(&buf)
+		if _, werr := gz.Write(responseBody); werr == nil {
+			if werr = gz.Close(); werr == nil {
+				responseBody = buf.Bytes()
+				responseHeaders["Content-Encoding"] = "gzip"
+				delete(responseHeaders, "Content-Length")
+			}
+		}
 	}
 
 	return protocol.ResponsePayload{
