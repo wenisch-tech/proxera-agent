@@ -1,0 +1,33 @@
+image:
+  registry: ghcr.io
+  repository: wenisch-tech/proxera-client
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+config:
+  serverUrl: ""
+  logLevel: info
+  heartbeatInterval: 30s
+  heartbeatTimeout: 10s
+  reconnectBase: 1s
+  reconnectMax: 60s
+  requestTimeout: 30s
+  concurrencyLimit: 100
+
+apiKeySecret:
+  name: ""
+  key: PROXERA_API_KEY
+
+serviceAccount:
+  create: true
+  name: ""

@@ -1,0 +1,136 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+      changelog:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Setup yq
+        uses: mikefarah/yq@v4.44.2
+
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Flatten release files
+        run: |
+          find release -type f -name 'proxera-client-*' -exec cp {} release/ \;
+
+      - name: Generate checksums
+        run: |
+          cd release
+          sha256sum proxera-client-* > SHA256SUMS
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./
+          output-file: release/proxera-client-${{ inputs.version }}-sbom.spdx.json
+          format: spdx-json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign binaries
+        run: |
+          cd release
+          for f in proxera-client-*; do
+            cosign sign-blob --yes "$f" --bundle "$f.cosign.bundle"
+          done
+
+      - name: Update chart versions
+        run: |
+          yq -i '.version = "${{ inputs.version }}"' charts/proxera-client/Chart.yaml
+          yq -i '.appVersion = "${{ inputs.version }}"' charts/proxera-client/Chart.yaml
+          yq -i '.image.tag = "${{ inputs.version }}"' charts/proxera-client/values.yaml
+
+      - name: Package Helm chart
+        run: |
+          mkdir -p release
+          helm package charts/proxera-client --destination release
+
+      - name: Sign Helm chart
+        run: |
+          cd release
+          cosign sign-blob --yes proxera-client-${{ inputs.version }}.tgz --bundle proxera-client-${{ inputs.version }}.tgz.cosign.bundle
+
+      - name: Publish chart to jfwenisch/charts
+        env:
+          CHARTS_REPO_TOKEN: ${{ secrets.CHARTS_REPO_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${CHARTS_REPO_TOKEN}@github.com/jfwenisch/charts.git" /tmp/charts
+          cp release/proxera-client-${{ inputs.version }}.tgz /tmp/charts/
+          cp release/proxera-client-${{ inputs.version }}.tgz.cosign.bundle /tmp/charts/
+          cd /tmp/charts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add proxera-client-${{ inputs.version }}.tgz proxera-client-${{ inputs.version }}.tgz.cosign.bundle
+          git commit -m "Add proxera-client-${{ inputs.version }}"
+          git push
+
+      - name: Create release notes file
+        run: |
+          cat > release-notes.md << 'EOF'
+          ## Container image
+          ${{ inputs.image }}:${{ inputs.version }}
+
+          ## Binaries
+          - proxera-client-linux-amd64
+          - proxera-client-linux-arm64
+          - proxera-client-windows-amd64.exe
+          - proxera-client-windows-arm64.exe
+
+          ## Verify checksums
+          ```bash
+          sha256sum -c SHA256SUMS
+          ```
+
+          ## Changelog
+          ${{ inputs.changelog }}
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: Release ${{ inputs.tag }}
+          body_path: release-notes.md
+          files: |
+            release/proxera-client-linux-amd64
+            release/proxera-client-linux-arm64
+            release/proxera-client-windows-amd64.exe
+            release/proxera-client-windows-arm64.exe
+            release/SHA256SUMS
+            release/proxera-client-${{ inputs.version }}-sbom.spdx.json
+            release/proxera-client-linux-amd64.cosign.bundle
+            release/proxera-client-linux-arm64.cosign.bundle
+            release/proxera-client-windows-amd64.exe.cosign.bundle
+            release/proxera-client-windows-arm64.exe.cosign.bundle
+            release/proxera-client-${{ inputs.version }}.tgz
+            release/proxera-client-${{ inputs.version }}.tgz.cosign.bundle

@@ -1,0 +1,60 @@
+name: Build Binaries
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  binaries:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+          - goos: linux
+            goarch: arm64
+            ext: ""
+          - goos: windows
+            goarch: amd64
+            ext: ".exe"
+          - goos: windows
+            goarch: arm64
+            ext: ".exe"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          mkdir -p ../dist
+          NAME="proxera-client-${GOOS}-${GOARCH}${{ matrix.ext }}"
+          CGO_ENABLED=0 go build \
+            -trimpath \
+            -ldflags "-s -w -X github.com/wenisch-tech/proxera-client/internal/version.Version=${VERSION} -X github.com/wenisch-tech/proxera-client/internal/version.Commit=${GITHUB_SHA} -X github.com/wenisch-tech/proxera-client/internal/version.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            -o "../dist/${NAME}" ./cmd/proxera-client
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/proxera-client-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+          if-no-files-found: error
