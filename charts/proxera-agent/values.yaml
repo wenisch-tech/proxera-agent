@@ -1,11 +1,9 @@
 image:
   registry: ghcr.io
   repository: wenisch-tech/proxera-agent
-  tag: ""
+  tag: "0.0.10"
   pullPolicy: IfNotPresent
-
 replicaCount: 1
-
 resources:
   limits:
     cpu: 200m
@@ -13,7 +11,6 @@ resources:
   requests:
     cpu: 50m
     memory: 64Mi
-
 config:
   serverUrl: ""
   logLevel: info
@@ -23,15 +20,13 @@ config:
   reconnectMax: 60s
   requestTimeout: 30s
   concurrencyLimit: 100
-
 # Provide the API key value directly — the chart will create a Secret for it.
+
 # If apiKeySecret.name is set, that existing Secret is used instead and apiKey is ignored.
 apiKey: ""
-
 apiKeySecret:
   name: ""
   key: PROXERA_API_KEY
-
 serviceAccount:
   create: true
   name: ""
