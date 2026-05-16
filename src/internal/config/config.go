@@ -47,7 +47,7 @@ func Load(args []string) (Config, error) {
 		ConcurrencyLimit:  mustIntFromEnv(envConcurrencyLimit, 100),
 	}
 
-	fs := flag.NewFlagSet("proxera-client", flag.ContinueOnError)
+	fs := flag.NewFlagSet("proxera-agent", flag.ContinueOnError)
 	fs.StringVar(&cfg.ServerURL, "server-url", cfg.ServerURL, "Proxera server websocket URL, e.g. wss://server/tunnel")
 	fs.StringVar(&cfg.APIKey, "api-key", cfg.APIKey, "API key used as X-Proxera-Token")
 	fs.StringVar(&cfg.LogLevel, "log-level", cfg.LogLevel, "Log level: debug|info|warn|error")

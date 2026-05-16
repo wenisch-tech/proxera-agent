@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/wenisch-tech/proxera-client/internal/config"
-	"github.com/wenisch-tech/proxera-client/internal/protocol"
-	"github.com/wenisch-tech/proxera-client/internal/proxy"
+	"github.com/wenisch-tech/proxera-agent/internal/config"
+	"github.com/wenisch-tech/proxera-agent/internal/protocol"
+	"github.com/wenisch-tech/proxera-agent/internal/proxy"
 )
 
 type Client struct {

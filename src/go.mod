@@ -1,4 +1,4 @@
-module github.com/wenisch-tech/proxera-client
+module github.com/wenisch-tech/proxera-agent
 
 go 1.24
 

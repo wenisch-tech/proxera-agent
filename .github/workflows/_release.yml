@@ -40,18 +40,18 @@ jobs:
 
       - name: Flatten release files
         run: |
-          find release -type f -name 'proxera-client-*' -exec cp {} release/ \;
+          find release -type f -name 'proxera-agent-*' -exec cp {} release/ \;
 
       - name: Generate checksums
         run: |
           cd release
-          sha256sum proxera-client-* > SHA256SUMS
+          sha256sum proxera-agent-* > SHA256SUMS
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
           path: ./
-          output-file: release/proxera-client-${{ inputs.version }}-sbom.spdx.json
+          output-file: release/proxera-agent-${{ inputs.version }}-sbom.spdx.json
           format: spdx-json
 
       - name: Install Cosign
@@ -60,38 +60,38 @@ jobs:
       - name: Sign binaries
         run: |
           cd release
-          for f in proxera-client-*; do
+          for f in proxera-agent-*; do
             cosign sign-blob --yes "$f" --bundle "$f.cosign.bundle"
           done
 
       - name: Update chart versions
         run: |
-          yq -i '.version = "${{ inputs.version }}"' charts/proxera-client/Chart.yaml
-          yq -i '.appVersion = "${{ inputs.version }}"' charts/proxera-client/Chart.yaml
-          yq -i '.image.tag = "${{ inputs.version }}"' charts/proxera-client/values.yaml
+          yq -i '.version = "${{ inputs.version }}"' charts/proxera-agent/Chart.yaml
+          yq -i '.appVersion = "${{ inputs.version }}"' charts/proxera-agent/Chart.yaml
+          yq -i '.image.tag = "${{ inputs.version }}"' charts/proxera-agent/values.yaml
 
       - name: Package Helm chart
         run: |
           mkdir -p release
-          helm package charts/proxera-client --destination release
+          helm package charts/proxera-agent --destination release
 
       - name: Sign Helm chart
         run: |
           cd release
-          cosign sign-blob --yes proxera-client-${{ inputs.version }}.tgz --bundle proxera-client-${{ inputs.version }}.tgz.cosign.bundle
+          cosign sign-blob --yes proxera-agent-${{ inputs.version }}.tgz --bundle proxera-agent-${{ inputs.version }}.tgz.cosign.bundle
 
       - name: Publish chart to jfwenisch/charts
         env:
           CHARTS_REPO_TOKEN: ${{ secrets.CHARTS_REPO_TOKEN }}
         run: |
           git clone "https://x-access-token:${CHARTS_REPO_TOKEN}@github.com/jfwenisch/charts.git" /tmp/charts
-          cp release/proxera-client-${{ inputs.version }}.tgz /tmp/charts/
-          cp release/proxera-client-${{ inputs.version }}.tgz.cosign.bundle /tmp/charts/
+          cp release/proxera-agent-${{ inputs.version }}.tgz /tmp/charts/
+          cp release/proxera-agent-${{ inputs.version }}.tgz.cosign.bundle /tmp/charts/
           cd /tmp/charts
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add proxera-client-${{ inputs.version }}.tgz proxera-client-${{ inputs.version }}.tgz.cosign.bundle
-          git commit -m "Add proxera-client-${{ inputs.version }}"
+          git add proxera-agent-${{ inputs.version }}.tgz proxera-agent-${{ inputs.version }}.tgz.cosign.bundle
+          git commit -m "Add proxera-agent-${{ inputs.version }}"
           git push
 
       - name: Create release notes file
@@ -101,10 +101,10 @@ jobs:
           ${{ inputs.image }}:${{ inputs.version }}
 
           ## Binaries
-          - proxera-client-linux-amd64
-          - proxera-client-linux-arm64
-          - proxera-client-windows-amd64.exe
-          - proxera-client-windows-arm64.exe
+          - proxera-agent-linux-amd64
+          - proxera-agent-linux-arm64
+          - proxera-agent-windows-amd64.exe
+          - proxera-agent-windows-arm64.exe
 
           ## Verify checksums
           ```bash
@@ -122,15 +122,15 @@ jobs:
           name: Release ${{ inputs.tag }}
           body_path: release-notes.md
           files: |
-            release/proxera-client-linux-amd64
-            release/proxera-client-linux-arm64
-            release/proxera-client-windows-amd64.exe
-            release/proxera-client-windows-arm64.exe
+            release/proxera-agent-linux-amd64
+            release/proxera-agent-linux-arm64
+            release/proxera-agent-windows-amd64.exe
+            release/proxera-agent-windows-arm64.exe
             release/SHA256SUMS
-            release/proxera-client-${{ inputs.version }}-sbom.spdx.json
-            release/proxera-client-linux-amd64.cosign.bundle
-            release/proxera-client-linux-arm64.cosign.bundle
-            release/proxera-client-windows-amd64.exe.cosign.bundle
-            release/proxera-client-windows-arm64.exe.cosign.bundle
-            release/proxera-client-${{ inputs.version }}.tgz
-            release/proxera-client-${{ inputs.version }}.tgz.cosign.bundle
+            release/proxera-agent-${{ inputs.version }}-sbom.spdx.json
+            release/proxera-agent-linux-amd64.cosign.bundle
+            release/proxera-agent-linux-arm64.cosign.bundle
+            release/proxera-agent-windows-amd64.exe.cosign.bundle
+            release/proxera-agent-windows-arm64.exe.cosign.bundle
+            release/proxera-agent-${{ inputs.version }}.tgz
+            release/proxera-agent-${{ inputs.version }}.tgz.cosign.bundle

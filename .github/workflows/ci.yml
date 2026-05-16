@@ -19,7 +19,7 @@ jobs:
       new_tag: ${{ steps.bump.outputs.new_tag }}
       new_version: ${{ steps.vars.outputs.new_version }}
       changelog: ${{ steps.bump.outputs.changelog }}
-      image: ghcr.io/wenisch-tech/proxera-client
+      image: ghcr.io/wenisch-tech/proxera-agent
     steps:
       - name: Checkout
         uses: actions/checkout@v6

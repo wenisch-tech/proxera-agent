@@ -1,5 +1,5 @@
-APP_NAME := proxera-client
-PKG := github.com/wenisch-tech/proxera-client
+APP_NAME := proxera-agent
+PKG := github.com/wenisch-tech/proxera-agent
 SRC_DIR := src
 VERSION ?= dev
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)

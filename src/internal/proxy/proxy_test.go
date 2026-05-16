@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wenisch-tech/proxera-client/internal/protocol"
+	"github.com/wenisch-tech/proxera-agent/internal/protocol"
 )
 
 func TestHandleForwardsRequestAndEncodesResponse(t *testing.T) {

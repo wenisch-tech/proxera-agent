@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/wenisch-tech/proxera-client/internal/config"
-	"github.com/wenisch-tech/proxera-client/internal/logging"
-	"github.com/wenisch-tech/proxera-client/internal/tunnel"
-	"github.com/wenisch-tech/proxera-client/internal/version"
+	"github.com/wenisch-tech/proxera-agent/internal/config"
+	"github.com/wenisch-tech/proxera-agent/internal/logging"
+	"github.com/wenisch-tech/proxera-agent/internal/tunnel"
+	"github.com/wenisch-tech/proxera-agent/internal/version"
 )
 
 func main() {

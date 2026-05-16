@@ -1,4 +1,4 @@
-# proxera-client
+# proxera-agent
 
 Go client for [proxera](https://github.com/wenisch-tech/proxera). It creates a persistent tunnel over WebSocket and proxies inbound tunnel requests to local HTTP services.
 
@@ -31,7 +31,7 @@ Optional:
 Flags override environment values:
 
 ```bash
-go -C src run ./cmd/proxera-client \
+go -C src run ./cmd/proxera-agent \
   --server-url wss://proxera.example.com/tunnel \
   --api-key "$PROXERA_API_KEY" \
   --log-level info
@@ -55,21 +55,21 @@ make test
 ## Docker
 
 ```bash
-docker build -t ghcr.io/wenisch-tech/proxera-client:dev .
+docker build -t ghcr.io/wenisch-tech/proxera-agent:dev .
 ```
 
 ## Helm
 
-Helm chart lives in `charts/proxera-client` and is packaged during release.
+Helm chart lives in `charts/proxera-agent` and is packaged during release.
 
 ## Release assets
 
 CI release uploads:
 
-- `proxera-client-linux-amd64`
-- `proxera-client-linux-arm64`
-- `proxera-client-windows-amd64.exe`
-- `proxera-client-windows-arm64.exe`
+- `proxera-agent-linux-amd64`
+- `proxera-agent-linux-arm64`
+- `proxera-agent-windows-amd64.exe`
+- `proxera-agent-windows-arm64.exe`
 - `SHA256SUMS`
 - CycloneDX SBOM
 - Cosign bundles and provenance attestations

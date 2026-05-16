@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "proxera-client.fullname" . }}
+  name: {{ include "proxera-agent.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "proxera-client.name" . }}
+    app.kubernetes.io/name: {{ include "proxera-agent.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "proxera-client.name" . }}
+      app.kubernetes.io/name: {{ include "proxera-agent.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "proxera-client.name" . }}
+        app.kubernetes.io/name: {{ include "proxera-agent.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ include "proxera-client.serviceAccountName" . }}
+      serviceAccountName: {{ include "proxera-agent.serviceAccountName" . }}
       containers:
-        - name: proxera-client
+        - name: proxera-agent
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:

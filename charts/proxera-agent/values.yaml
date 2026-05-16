@@ -1,6 +1,6 @@
 image:
   registry: ghcr.io
-  repository: wenisch-tech/proxera-client
+  repository: wenisch-tech/proxera-agent
   tag: ""
   pullPolicy: IfNotPresent
 

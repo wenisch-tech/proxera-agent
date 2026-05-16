@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wenisch-tech/proxera-client/internal/protocol"
+	"github.com/wenisch-tech/proxera-agent/internal/protocol"
 )
 
 var hopByHopHeaders = map[string]struct{}{
