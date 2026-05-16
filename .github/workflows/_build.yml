@@ -55,6 +55,6 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: binary-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: proxera-agent-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/proxera-agent-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
           if-no-files-found: error
