@@ -86,7 +86,7 @@ jobs:
         env:
           GITHUBTOKEN: ${{ secrets.GITHUBTOKEN }}
         run: |
-          git clone "https://github.com/jfwenisch/charts.git" charts-repo
+          git clone "https://${GITHUBTOKEN}@github.com/jfwenisch/charts.git" charts-repo
           mkdir -p charts-repo/proxera-agent
           cp release/proxera-agent-${{ inputs.version }}.tgz charts-repo/proxera-agent/
           cp release/proxera-agent-${{ inputs.version }}.tgz.cosign.bundle charts-repo/proxera-agent/ 2>/dev/null || true
