@@ -42,7 +42,12 @@ spec:
             - name: PROXERA_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "apiKeySecret.name is required" .Values.apiKeySecret.name }}
+                  {{- if .Values.apiKeySecret.name }}
+                  name: {{ .Values.apiKeySecret.name }}
                   key: {{ .Values.apiKeySecret.key | quote }}
+                  {{- else }}
+                  name: {{ include "proxera-agent.fullname" . }}-api-key
+                  key: "PROXERA_API_KEY"
+                  {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

@@ -24,6 +24,10 @@ config:
   requestTimeout: 30s
   concurrencyLimit: 100
 
+# Provide the API key value directly — the chart will create a Secret for it.
+# If apiKeySecret.name is set, that existing Secret is used instead and apiKey is ignored.
+apiKey: ""
+
 apiKeySecret:
   name: ""
   key: PROXERA_API_KEY
