@@ -75,15 +75,14 @@ jobs:
       - name: Update version.go
         run: |
           set -euo pipefail
-          cat > src/internal/version/version.go << EOF
-package version
-
-var (
-	Version   = "${{ inputs.version }}"
-	Commit    = "${GITHUB_SHA}"
-	BuildDate = "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-)
-EOF
+          {
+            printf 'package version\n\n'
+            printf 'var (\n'
+            printf '\tVersion   = "%s"\n' "${{ inputs.version }}"
+            printf '\tCommit    = "%s"\n' "${GITHUB_SHA}"
+            printf '\tBuildDate = "%s"\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            printf ')\n'
+          } > src/internal/version/version.go
 
       - name: Update CHANGELOG.md
         env:
