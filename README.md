@@ -11,6 +11,65 @@ Go client for [proxera](https://github.com/wenisch-tech/proxera). It creates a p
 - Structured JSON logging for tunnel lifecycle and proxy traffic.
 - CLI flags with environment variable support.
 
+## Quickstart
+
+
+### Deploying with Helm
+
+Add the chart repository and install the agent into your cluster:
+
+```bash
+helm repo add wenisch-tech https://charts.wenisch.tech
+helm repo update
+helm upgrade --install proxera-agent wenisch-tech/proxera-agent \
+  --namespace proxera \
+  --create-namespace \
+  --set config.serverUrl="wss://proxera.example.com/tunnel" \
+  --set secret.apiKey="$PROXERA_API_KEY"
+```
+
+Or supply values via a file:
+
+```yaml
+# values.yaml
+config:
+  serverUrl: "wss://proxera.example.com/tunnel"
+secret:
+  apiKey: "<your-api-key>"
+```
+
+```bash
+helm upgrade --install proxera-agent wenisch-tech/proxera-agent \
+  --namespace proxera \
+  --create-namespace \
+  -f values.yaml
+```
+
+### Using a pre-built binary
+
+Download the latest binary for your platform from the [releases page](https://github.com/wenisch-tech/proxera-agent/releases), then run it directly:
+
+```bash
+# Linux / macOS
+chmod +x proxera-agent-linux-amd64
+./proxera-agent-linux-amd64 \
+  --server-url wss://proxera.example.com/tunnel \
+  --api-key "$PROXERA_API_KEY"
+```
+
+```powershell
+# Windows
+.\proxera-agent-windows-amd64.exe `
+  --server-url wss://proxera.example.com/tunnel `
+  --api-key "$env:PROXERA_API_KEY"
+```
+
+Verify the download against the published `SHA256SUMS` file before running:
+
+```bash
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
 ## Configuration
 
 Required:
