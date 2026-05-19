@@ -90,3 +90,17 @@ jobs:
       changelog: ${{ needs.versioning.outputs.changelog }}
       image: ${{ needs.versioning.outputs.image }}
     secrets: inherit
+
+  hassio:
+    needs:
+      - versioning
+      - release
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/hassio-builder.yaml
+    with:
+      version: ${{ needs.versioning.outputs.new_version }}
+    secrets: inherit

@@ -1,8 +1,17 @@
 name: Build HA Add-on
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version to build (without v prefix, e.g. 0.0.12)"
 
 env:
   ARCHITECTURES: '["amd64", "aarch64"]'
@@ -49,13 +58,13 @@ jobs:
           file: hassio-addon/Dockerfile
           image: ${{ matrix.image }}
           image-tags: |
-            ${{ github.event.release.tag_name }}
+            ${{ inputs.version }}
             latest
           push: "true"
-          version: ${{ github.event.release.tag_name }}
+          version: ${{ inputs.version }}
           build-args: |
             BUILD_REVISION=${{ github.sha }}
-            BUILD_DATE=${{ github.event.release.created_at }}
+            BUILD_DATE=${{ github.run_started_at }}
 
   manifest:
     name: Publish multi-arch manifest
@@ -72,33 +81,5 @@ jobs:
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
           image-name: ${{ env.IMAGE_NAME }}
           image-tags: |
-            ${{ github.event.release.tag_name }}
+            ${{ inputs.version }}
             latest
-
-  update-version:
-    name: Update config.yaml version
-    needs: manifest
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Bump version in hassio-addon/config.yaml
-        run: |
-          TAG="${{ github.event.release.tag_name }}"
-          VERSION="${TAG#v}"
-          sed -i "s/^version: .*/version: \"${VERSION}\"/" hassio-addon/config.yaml
-
-      - name: Commit and push
-        run: |
-          TAG="${{ github.event.release.tag_name }}"
-          VERSION="${TAG#v}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add hassio-addon/config.yaml
-          git diff --cached --quiet || git commit -m "chore: bump hassio-addon version to ${VERSION}"
-          git push

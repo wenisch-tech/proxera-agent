@@ -1,6 +1,6 @@
 # Proxera Agent — Home Assistant Add-on
 
-![Logo](logo.png)
+![Logo](../docs/img/proxera-agent-banner.png)
 
 Go client for [proxera](https://github.com/wenisch-tech/proxera). Creates a persistent WebSocket tunnel and proxies inbound requests to local HTTP services running on your Home Assistant host.
 
