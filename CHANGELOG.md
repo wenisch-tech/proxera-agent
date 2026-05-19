@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.1.2
+
+### [0.1.2](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.1...v0.1.2) (2026-05-19)
+
+
+### Documentation
+
+* added add to HA button to readme ([e9936fc](https://github.com/wenisch-tech/proxera-agent/commit/e9936fca9dd82fccbd716efe03da6fd80fed4a35))
+
+
+
+
 ## v0.1.1
 
 ### [0.1.1](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.0...v0.1.1) (2026-05-19)
