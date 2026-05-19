@@ -19,6 +19,10 @@ Internet → proxera server → WebSocket tunnel → proxera-agent → local ser
 
 ## Installation
 
+[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwenisch-tech%2Fproxera-agent)
+
+Click the button above, or add the repository manually:
+
 1. In Home Assistant, go to **Settings → Add-ons → Add-on Store**
 2. Click the menu (⋮) in the top right and choose **Repositories**
 3. Add the following URL and click **Add**:
