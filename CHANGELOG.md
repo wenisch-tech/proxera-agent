@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.1.0
+
+## [0.1.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.0.11...v0.1.0) (2026-05-19)
+
+
+### Features
+
+* Added HASSIO Addon Integration ([ec558f4](https://github.com/wenisch-tech/proxera-agent/commit/ec558f4c04d8b3c871e07ebf5c0cd703e84c6cf8))
+
+
+### Bug Fixes
+
+* add banner image ([fc8c0c4](https://github.com/wenisch-tech/proxera-agent/commit/fc8c0c4b0fee29332c0786f95604dc3274c5e586))
+
+
+
+
 ## v0.0.11
 
 ### [0.0.11](https://github.com/wenisch-tech/proxera-agent/compare/v0.0.10...v0.0.11) (2026-05-17)
