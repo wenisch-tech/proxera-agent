@@ -1,0 +1,44 @@
+configuration:
+  server_url:
+    name: Server URL
+    description: >-
+      WebSocket URL of your proxera server. Must start with ws:// or wss://.
+      Example: wss://proxera.example.com/tunnel
+  api_key:
+    name: API Key
+    description: >-
+      Authentication token sent as X-Proxera-Token. Obtain this from your
+      proxera server configuration.
+  log_level:
+    name: Log Level
+    description: Verbosity of add-on logs. Use debug for detailed frame-level output.
+  heartbeat_interval:
+    name: Heartbeat Interval
+    description: >-
+      How often a ping is sent to keep the tunnel alive. Uses Go duration
+      syntax (e.g. 30s, 1m). Defaults to 30s.
+  heartbeat_timeout:
+    name: Heartbeat Timeout
+    description: >-
+      How long to wait for a pong response before treating the connection as
+      dead. Uses Go duration syntax (e.g. 10s). Defaults to 10s.
+  reconnect_base:
+    name: Reconnect Base Delay
+    description: >-
+      Initial backoff duration before the first reconnect attempt after a
+      disconnect. Uses Go duration syntax (e.g. 1s). Defaults to 1s.
+  reconnect_max:
+    name: Reconnect Max Delay
+    description: >-
+      Maximum backoff duration between reconnect attempts. Uses Go duration
+      syntax (e.g. 60s). Defaults to 60s.
+  request_timeout:
+    name: Request Timeout
+    description: >-
+      Timeout for proxied HTTP requests to local services. Uses Go duration
+      syntax (e.g. 30s). Defaults to 30s.
+  concurrency_limit:
+    name: Concurrency Limit
+    description: >-
+      Maximum number of in-flight proxied requests handled simultaneously.
+      Defaults to 100.
