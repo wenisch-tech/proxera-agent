@@ -1,18 +1,15 @@
 name: "Proxera Agent"
-version: "0.0.11"
+version: "0.1.1"
 slug: proxera_agent
 description: "WebSocket tunnel client that proxies inbound tunnel requests to local HTTP services."
 url: "https://github.com/wenisch-tech/proxera-agent/tree/main/hassio-addon"
 arch:
   - amd64
   - aarch64
-
 image: "ghcr.io/wenisch-tech/hassio-proxera-agent"
-
 startup: services
 boot: auto
 init: false
-
 options:
   server_url: ""
   api_key: ""
@@ -23,7 +20,6 @@ options:
   reconnect_max: ""
   request_timeout: ""
   concurrency_limit: 0
-
 schema:
   server_url: str
   api_key: password

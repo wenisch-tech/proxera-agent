@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.1.1
+
+### [0.1.1](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.0...v0.1.1) (2026-05-19)
+
+
+### Bug Fixes
+
+* Updated Workflows to include hassio relevant parts ([d753f75](https://github.com/wenisch-tech/proxera-agent/commit/d753f75fac5c54e319cf6ad88aac5adaa1d99eb7))
+
+
+### Documentation
+
+* added HASSIO information to readme ([e96c315](https://github.com/wenisch-tech/proxera-agent/commit/e96c315351a1b688bd26e483599029ab8576cba2))
+
+
+
+
 ## v0.1.0
 
 ## [0.1.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.0.11...v0.1.0) (2026-05-19)
