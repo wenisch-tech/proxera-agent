@@ -2,7 +2,7 @@
 # proxera-agent
 ![proxera-agent](docs/img/proxera-agent-banner.png)
 
-Go client for [proxera](https://github.com/wenisch-tech/proxera). It creates a persistent tunnel over WebSocket and proxies inbound tunnel requests to local HTTP services.
+Go client for [proxera](https://github.com/wenisch-tech/proxera). It creates a persistent tunnel over WebSocket and proxies inbound tunnel requests to local HTTP services. Can be deployed as a Kubernetes workload via Helm, run as a standalone binary, or installed as a [Home Assistant add-on](hassio-addon/README.md).
 
 ## Features
 
