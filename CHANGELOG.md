@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.0
+
+## [0.2.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.2...v0.2.0) (2026-05-20)
+
+
+### Features
+
+* added Websocket support in relation to proxera/pull/17 ([ab837db](https://github.com/wenisch-tech/proxera-agent/commit/ab837db88c59947a16e0b37aeb9bdfbf3b98e06e))
+
+
+### Documentation
+
+* updated quickstart ([44b1552](https://github.com/wenisch-tech/proxera-agent/commit/44b1552bd36bd90c1d68281028abc506f23f57ac))
+
+
+
+
 ## v0.1.2
 
 ### [0.1.2](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.1...v0.1.2) (2026-05-19)
