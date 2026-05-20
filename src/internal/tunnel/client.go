@@ -2,6 +2,7 @@ package tunnel
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -16,12 +17,38 @@ import (
 	"github.com/wenisch-tech/proxera-agent/internal/proxy"
 )
 
+// wsSession tracks one proxied WebSocket connection to a local service.
+type wsSession struct {
+	conn   *websocket.Conn
+	sendCh chan wsOutbound
+}
+
+// wsOutbound is a message queued for delivery to the local WebSocket service.
+type wsOutbound struct {
+	data   []byte
+	binary bool
+	close  bool
+	code   int
+	reason string
+}
+
+// wsHandshakeHeaders are managed by the WebSocket dialer itself and must not be
+// forwarded to the local service when establishing the upstream connection.
+var wsHandshakeHeaders = map[string]bool{
+	"upgrade":                  true,
+	"connection":               true,
+	"sec-websocket-key":        true,
+	"sec-websocket-version":    true,
+	"sec-websocket-extensions": true,
+}
+
 type Client struct {
 	cfg         config.Config
 	log         *slog.Logger
 	proxyClient *proxy.Client
 	backoff     Backoff
 	dialer      websocket.Dialer
+	wsSessions  sync.Map // wsSessionID (string) → *wsSession
 }
 
 func NewClient(cfg config.Config, logger *slog.Logger) *Client {
@@ -168,6 +195,44 @@ func (c *Client) readLoop(ctx context.Context, conn *websocket.Conn, outbound ch
 				defer func() { <-sem }()
 				c.handleRequest(ctx, outbound, f.CorrelationID, req)
 			}(frame, request)
+		case protocol.TypeWsOpen:
+			wsOpen, err := protocol.DecodePayload[protocol.WsOpenPayload](frame)
+			if err != nil {
+				c.log.Warn("failed to parse WS_OPEN payload", slog.Any("error", err))
+				continue
+			}
+			go c.handleWsOpen(ctx, outbound, frame.CorrelationID, wsOpen)
+		case protocol.TypeWsData:
+			wsData, err := protocol.DecodePayload[protocol.WsDataPayload](frame)
+			if err != nil {
+				c.log.Warn("failed to parse WS_DATA payload", slog.Any("error", err))
+				continue
+			}
+			data, err := base64.StdEncoding.DecodeString(wsData.Data)
+			if err != nil {
+				c.log.Warn("failed to decode WS_DATA payload", slog.String("wsSessionId", wsData.WsSessionID), slog.Any("error", err))
+				continue
+			}
+			if v, ok := c.wsSessions.Load(wsData.WsSessionID); ok {
+				select {
+				case v.(*wsSession).sendCh <- wsOutbound{data: data, binary: wsData.Binary}:
+				default:
+					c.log.Warn("WS_DATA send channel full, dropping frame", slog.String("wsSessionId", wsData.WsSessionID))
+				}
+			}
+		case protocol.TypeWsClose:
+			wsClose, err := protocol.DecodePayload[protocol.WsClosePayload](frame)
+			if err != nil {
+				c.log.Warn("failed to parse WS_CLOSE payload", slog.Any("error", err))
+				continue
+			}
+			if v, ok := c.wsSessions.LoadAndDelete(wsClose.WsSessionID); ok {
+				select {
+				case v.(*wsSession).sendCh <- wsOutbound{close: true, code: wsClose.Code, reason: wsClose.Reason}:
+				default:
+					c.log.Warn("WS_CLOSE send channel full, dropping close frame", slog.String("wsSessionId", wsClose.WsSessionID))
+				}
+			}
 		case protocol.TypeError:
 			errPayload, _ := protocol.DecodePayload[protocol.ErrorPayload](frame)
 			c.log.Warn("received error frame from server",
@@ -249,6 +314,141 @@ func (c *Client) handleRequest(ctx context.Context, outbound chan<- protocol.Fra
 		slog.Int("status", response.Status),
 		slog.Int64("latencyMs", response.LatencyMs),
 	)
+}
+
+// handleWsOpen dials the local WebSocket service and sets up a bidirectional
+// proxy between the local connection and the Proxera tunnel.
+//
+// Frame flow:
+//   - Outbound (local → tunnel): goroutine reads from localConn and sends WS_DATA / WS_CLOSE frames.
+//   - Inbound (tunnel → local): goroutine drains session.sendCh and writes to localConn.
+func (c *Client) handleWsOpen(ctx context.Context, outbound chan<- protocol.Frame, wsSessionID string, payload protocol.WsOpenPayload) {
+	targetURL := fmt.Sprintf("ws://%s:%d%s", payload.LocalHost, payload.LocalPort, payload.Path)
+	if payload.QueryString != "" {
+		targetURL += "?" + payload.QueryString
+	}
+
+	localConn, resp, err := websocket.DefaultDialer.DialContext(ctx, targetURL, c.buildWsHeaders(payload.Headers))
+	if err != nil {
+		code := 1011
+		if resp != nil {
+			code = resp.StatusCode
+		}
+		select {
+		case outbound <- protocol.Frame{
+			Type:          protocol.TypeWsOpenReject,
+			CorrelationID: wsSessionID,
+			Payload:       protocol.MustEncodePayload(map[string]any{"code": code, "reason": err.Error()}),
+		}:
+		case <-ctx.Done():
+		}
+		c.log.Warn("WS_OPEN: failed to dial local service",
+			slog.String("wsSessionId", wsSessionID),
+			slog.String("target", targetURL),
+			slog.Any("error", err),
+		)
+		return
+	}
+
+	session := &wsSession{
+		conn:   localConn,
+		sendCh: make(chan wsOutbound, 64),
+	}
+	c.wsSessions.Store(wsSessionID, session)
+
+	// Acknowledge the open to the server.
+	select {
+	case outbound <- protocol.Frame{
+		Type:          protocol.TypeWsOpenAck,
+		CorrelationID: wsSessionID,
+		Payload:       protocol.MustEncodePayload(map[string]any{}),
+	}:
+	case <-ctx.Done():
+		localConn.Close()
+		c.wsSessions.Delete(wsSessionID)
+		return
+	}
+
+	c.log.Debug("WS_OPEN_ACK sent", slog.String("wsSessionId", wsSessionID), slog.String("target", targetURL))
+
+	// Close the local connection when the tunnel session context is cancelled,
+	// which unblocks any goroutine blocked on localConn.ReadMessage().
+	go func() {
+		<-ctx.Done()
+		localConn.Close()
+	}()
+
+	// Goroutine: local WS → tunnel (agent-to-server direction).
+	go func() {
+		defer c.wsSessions.Delete(wsSessionID)
+		defer localConn.Close()
+		for {
+			msgType, data, err := localConn.ReadMessage()
+			if err != nil {
+				code, reason := websocket.CloseNormalClosure, ""
+				if ce, ok := err.(*websocket.CloseError); ok {
+					code, reason = ce.Code, ce.Text
+				}
+				select {
+				case outbound <- protocol.Frame{
+					Type:    protocol.TypeWsClose,
+					Payload: protocol.MustEncodePayload(protocol.WsClosePayload{WsSessionID: wsSessionID, Code: code, Reason: reason}),
+				}:
+				case <-ctx.Done():
+				}
+				return
+			}
+			binary := msgType == websocket.BinaryMessage
+			select {
+			case outbound <- protocol.Frame{
+				Type:    protocol.TypeWsData,
+				Payload: protocol.MustEncodePayload(protocol.WsDataPayload{WsSessionID: wsSessionID, Data: base64.StdEncoding.EncodeToString(data), Binary: binary}),
+			}:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	// Goroutine: tunnel → local WS (server-to-agent direction).
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case out, ok := <-session.sendCh:
+				if !ok {
+					return
+				}
+				if out.close {
+					_ = localConn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(out.code, out.reason))
+					localConn.Close()
+					return
+				}
+				msgType := websocket.TextMessage
+				if out.binary {
+					msgType = websocket.BinaryMessage
+				}
+				if err := localConn.WriteMessage(msgType, out.data); err != nil {
+					return
+				}
+			}
+		}
+	}()
+}
+
+// buildWsHeaders converts the header map from a WS_OPEN payload into an http.Header
+// suitable for the gorilla/websocket dialer, skipping handshake-only headers that
+// the dialer manages itself.
+func (c *Client) buildWsHeaders(raw map[string]string) http.Header {
+	h := http.Header{}
+	for k, v := range raw {
+		if wsHandshakeHeaders[strings.ToLower(k)] {
+			continue
+		}
+		h.Set(k, v)
+	}
+	return h
 }
 
 func (c *Client) enqueueError(outbound chan<- protocol.Frame, code, message, correlationID string) {

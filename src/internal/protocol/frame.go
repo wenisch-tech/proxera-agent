@@ -6,12 +6,17 @@ import (
 )
 
 const (
-	TypeRegisterAck = "REGISTER_ACK"
-	TypeRequest     = "REQUEST"
-	TypeResponse    = "RESPONSE"
-	TypePing        = "PING"
-	TypePong        = "PONG"
-	TypeError       = "ERROR"
+	TypeRegisterAck  = "REGISTER_ACK"
+	TypeRequest      = "REQUEST"
+	TypeResponse     = "RESPONSE"
+	TypePing         = "PING"
+	TypePong         = "PONG"
+	TypeError        = "ERROR"
+	TypeWsOpen       = "WS_OPEN"
+	TypeWsOpenAck    = "WS_OPEN_ACK"
+	TypeWsOpenReject = "WS_OPEN_REJECT"
+	TypeWsData       = "WS_DATA"
+	TypeWsClose      = "WS_CLOSE"
 )
 
 type Frame struct {
@@ -47,6 +52,30 @@ type ResponsePayload struct {
 type ErrorPayload struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
+}
+
+// WsOpenPayload is the payload of a WS_OPEN frame sent by the server to the agent.
+type WsOpenPayload struct {
+	WsSessionID string            `json:"wsSessionId"`
+	LocalHost   string            `json:"localHost"`
+	LocalPort   int               `json:"localPort"`
+	Path        string            `json:"path"`
+	QueryString string            `json:"queryString,omitempty"`
+	Headers     map[string]string `json:"headers,omitempty"`
+}
+
+// WsDataPayload is the payload of a WS_DATA frame (bidirectional).
+type WsDataPayload struct {
+	WsSessionID string `json:"wsSessionId"`
+	Data        string `json:"data"`
+	Binary      bool   `json:"binary"`
+}
+
+// WsClosePayload is the payload of a WS_CLOSE frame (bidirectional).
+type WsClosePayload struct {
+	WsSessionID string `json:"wsSessionId"`
+	Code        int    `json:"code"`
+	Reason      string `json:"reason"`
 }
 
 func MarshalFrame(frame Frame) ([]byte, error) {
