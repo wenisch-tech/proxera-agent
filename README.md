@@ -15,6 +15,11 @@ Go client for [proxera](https://github.com/wenisch-tech/proxera). It creates a p
 
 ## Quickstart
 
+### Home Assistant Add-on
+
+[![Add repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fwenisch-tech%2Fproxera-agent)
+
+Click the button above to add the repository to Home Assistant, then install the **Proxera Agent** add-on from the store. See the [add-on documentation](hassio-addon/README.md) for the full configuration reference.
 
 ### Deploying with Helm
 
@@ -49,27 +54,32 @@ helm upgrade --install proxera-agent wenisch-tech/proxera-agent \
 
 ### Using a pre-built binary
 
-Download the latest binary for your platform from the [releases page](https://github.com/wenisch-tech/proxera-agent/releases), then run it directly:
+Download the latest binary for your platform from the [releases page](https://github.com/wenisch-tech/proxera-agent/releases), or use the commands below to download and run it directly:
 
+**Linux amd64**
 ```bash
-# Linux / macOS
-chmod +x proxera-agent-linux-amd64
-./proxera-agent-linux-amd64 \
-  --server-url wss://proxera.example.com/tunnel \
-  --api-key "$PROXERA_API_KEY"
+curl -L https://github.com/wenisch-tech/proxera-agent/releases/latest/download/proxera-agent-linux-amd64 -o proxera-agent
+chmod +x proxera-agent
+./proxera-agent --server-url wss://proxera.example.com/tunnel --api-key "$PROXERA_API_KEY"
 ```
 
+**Linux arm64**
+```bash
+curl -L https://github.com/wenisch-tech/proxera-agent/releases/latest/download/proxera-agent-linux-arm64 -o proxera-agent
+chmod +x proxera-agent
+./proxera-agent --server-url wss://proxera.example.com/tunnel --api-key "$PROXERA_API_KEY"
+```
+
+**Windows amd64**
 ```powershell
-# Windows
-.\proxera-agent-windows-amd64.exe `
-  --server-url wss://proxera.example.com/tunnel `
-  --api-key "$env:PROXERA_API_KEY"
+Invoke-WebRequest -Uri https://github.com/wenisch-tech/proxera-agent/releases/latest/download/proxera-agent-windows-amd64.exe -OutFile proxera-agent.exe
+.\proxera-agent.exe --server-url wss://proxera.example.com/tunnel --api-key "$env:PROXERA_API_KEY"
 ```
 
-Verify the download against the published `SHA256SUMS` file before running:
-
-```bash
-sha256sum -c SHA256SUMS --ignore-missing
+**Windows arm64**
+```powershell
+Invoke-WebRequest -Uri https://github.com/wenisch-tech/proxera-agent/releases/latest/download/proxera-agent-windows-arm64.exe -OutFile proxera-agent.exe
+.\proxera-agent.exe --server-url wss://proxera.example.com/tunnel --api-key "$env:PROXERA_API_KEY"
 ```
 
 ## Configuration
