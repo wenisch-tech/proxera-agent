@@ -34,7 +34,12 @@ type Client struct {
 
 func New(timeout time.Duration) *Client {
 	return &Client{
-		httpClient: &http.Client{Timeout: timeout},
+		httpClient: &http.Client{
+			Timeout: timeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
 	}
 }
 
@@ -59,11 +64,13 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 		return protocol.ResponsePayload{}, fmt.Errorf("build local request: %w", err)
 	}
 
-	for k, v := range req.Headers {
+	for k, vals := range req.Headers {
 		if _, blocked := hopByHopHeaders[strings.ToLower(k)]; blocked {
 			continue
 		}
-		httpReq.Header.Set(k, v)
+		for _, v := range vals {
+			httpReq.Header.Add(k, v)
+		}
 	}
 
 	res, err := c.httpClient.Do(httpReq)
@@ -77,7 +84,7 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 		return protocol.ResponsePayload{}, fmt.Errorf("read local response body: %w", err)
 	}
 
-	responseHeaders := map[string]string{}
+	responseHeaders := map[string][]string{}
 	for k, values := range res.Header {
 		if len(values) == 0 {
 			continue
@@ -85,7 +92,7 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 		if _, blocked := hopByHopHeaders[strings.ToLower(k)]; blocked {
 			continue
 		}
-		responseHeaders[k] = values[0]
+		responseHeaders[k] = values
 	}
 
 	// Gzip-compress large unencoded bodies so the tunnel frame stays small.
@@ -97,7 +104,7 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 		if _, werr := gz.Write(responseBody); werr == nil {
 			if werr = gz.Close(); werr == nil {
 				responseBody = buf.Bytes()
-				responseHeaders["Content-Encoding"] = "gzip"
+				responseHeaders["Content-Encoding"] = []string{"gzip"}
 				delete(responseHeaders, "Content-Length")
 			}
 		}

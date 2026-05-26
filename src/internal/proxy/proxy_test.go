@@ -48,8 +48,8 @@ func TestHandleForwardsRequestAndEncodesResponse(t *testing.T) {
 		StripPrefix: "/api",
 		LocalHost:   parts[0],
 		LocalPort:   port,
-		Headers: map[string]string{
-			"Connection": "keep-alive",
+		Headers: map[string][]string{
+			"Connection": {"keep-alive"},
 		},
 		Body: base64.StdEncoding.EncodeToString([]byte("hello")),
 	})

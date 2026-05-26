@@ -31,22 +31,22 @@ type RegisterAckPayload struct {
 }
 
 type RequestPayload struct {
-	Method        string            `json:"method"`
-	Path          string            `json:"path"`
-	QueryString   string            `json:"queryString,omitempty"`
-	Headers       map[string]string `json:"headers,omitempty"`
-	Body          string            `json:"body,omitempty"`
-	LocalHost     string            `json:"localHost"`
-	LocalPort     int               `json:"localPort"`
-	StripPrefix   string            `json:"stripPrefix,omitempty"`
-	RemoteAddress string            `json:"remoteAddress,omitempty"`
+	Method        string              `json:"method"`
+	Path          string              `json:"path"`
+	QueryString   string              `json:"queryString,omitempty"`
+	Headers       map[string][]string `json:"headers,omitempty"`
+	Body          string              `json:"body,omitempty"`
+	LocalHost     string              `json:"localHost"`
+	LocalPort     int                 `json:"localPort"`
+	StripPrefix   string              `json:"stripPrefix,omitempty"`
+	RemoteAddress string              `json:"remoteAddress,omitempty"`
 }
 
 type ResponsePayload struct {
-	Status    int               `json:"status"`
-	Headers   map[string]string `json:"headers,omitempty"`
-	Body      string            `json:"body,omitempty"`
-	LatencyMs int64             `json:"latencyMs"`
+	Status    int                 `json:"status"`
+	Headers   map[string][]string `json:"headers,omitempty"`
+	Body      string              `json:"body,omitempty"`
+	LatencyMs int64               `json:"latencyMs"`
 }
 
 type ErrorPayload struct {
