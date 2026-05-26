@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.0
+
+## [0.3.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.2.0...v0.3.0) (2026-05-26)
+
+
+### Features
+
+* Addes support for redirect and setting of multiple cookies ([85441af](https://github.com/wenisch-tech/proxera-agent/commit/85441af76a5971785aa3bf58089bb274ecb47b7d))
+
+
+
+
 ## v0.2.0
 
 ## [0.2.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.1.2...v0.2.0) (2026-05-20)
