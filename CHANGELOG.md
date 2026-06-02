@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.3.7
+
+### [0.3.7](https://github.com/wenisch-tech/proxera-agent/compare/v0.3.6...v0.3.7) (2026-06-02)
+
+
+### Documentation
+
+* updated configuration options necessary for using trusted ip / proxy or not ([6da0f63](https://github.com/wenisch-tech/proxera-agent/commit/6da0f63bc9f02b3b5e2e571c0625b676fb9f7d43))
+
+
+
+
 ## v0.3.6
 
 ### [0.3.6](https://github.com/wenisch-tech/proxera-agent/compare/v0.3.5...v0.3.6) (2026-06-01)
