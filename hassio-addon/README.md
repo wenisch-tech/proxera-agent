@@ -70,6 +70,21 @@ log_level: info
 
 The add-on is configured with `startup: services`, so it starts automatically before Home Assistant Core on every boot.
 
+## Exposing Home Assistant
+
+When the route points at Home Assistant itself, disable **Forward client IP headers** on that route in the Proxera Admin UI. The add-on simply forwards the request headers it receives from the Proxera server to Home Assistant; this setting is controlled on the server route, not in the add-on.
+
+With the route option disabled, Proxera strips `X-Forwarded-For`, `X-Real-IP`, `Forwarded`, and related client IP headers before the request reaches Home Assistant. It still sends `X-Forwarded-Host`, `X-Forwarded-Proto`, and `X-Forwarded-Port`, so Home Assistant can still build correct external URLs.
+
+In Home Assistant's `configuration.yaml`, keep `http.use_x_forwarded_for` unset or set it to `false` unless you explicitly need Home Assistant to trust the original public client IP:
+
+```yaml
+http:
+  use_x_forwarded_for: false
+```
+
+If you set `use_x_forwarded_for: true`, Home Assistant requires a correct `trusted_proxies` entry for the immediate proxy source. Even then, changing forwarded client IP chains can cause Home Assistant login flows to fail with `IP address changed`.
+
 ## Troubleshooting
 
 **Add-on fails to start**
@@ -77,6 +92,12 @@ Check the **Log** tab. The most common causes are a missing `server_url` or `api
 
 **Tunnel connects but requests time out**
 Ensure the local service your proxera server is routing to is actually running on the Home Assistant host and accessible on the expected host and port.
+
+**Home Assistant login fails after credentials**
+Disable **Forward client IP headers** on the Home Assistant route in Proxera, and keep Home Assistant's `http.use_x_forwarded_for` unset or set to `false`. This avoids Home Assistant rejecting the auth flow when `X-Forwarded-For` or `X-Real-IP` changes between the login-flow request and token exchange.
+
+**Home Assistant reports `IP address changed`**
+This is normally caused by forwarded client IP headers. Check the route first: **Forward client IP headers** should be off for the Home Assistant route. Then check Home Assistant's `http` configuration and remove `use_x_forwarded_for: true` unless you also maintain an accurate `trusted_proxies` list and accept the login-flow behavior.
 
 **Frequent disconnections**
 Try lowering `heartbeat_interval` (e.g. `15s`) or increasing `heartbeat_timeout` (e.g. `20s`) if you have a high-latency connection to your proxera server.
