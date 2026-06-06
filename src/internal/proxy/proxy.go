@@ -72,6 +72,13 @@ func (c *Client) Handle(ctx context.Context, req protocol.RequestPayload) (proto
 			httpReq.Header.Add(k, v)
 		}
 	}
+	if req.PreserveHostHeader {
+		if hostValues := req.Headers["host"]; len(hostValues) > 0 && strings.TrimSpace(hostValues[0]) != "" {
+			httpReq.Host = strings.TrimSpace(hostValues[0])
+		} else if hostValues := req.Headers["Host"]; len(hostValues) > 0 && strings.TrimSpace(hostValues[0]) != "" {
+			httpReq.Host = strings.TrimSpace(hostValues[0])
+		}
+	}
 
 	res, err := c.httpClient.Do(httpReq)
 	if err != nil {

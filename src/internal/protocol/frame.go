@@ -40,6 +40,7 @@ type RequestPayload struct {
 	LocalPort     int                 `json:"localPort"`
 	StripPrefix   string              `json:"stripPrefix,omitempty"`
 	RemoteAddress string              `json:"remoteAddress,omitempty"`
+	PreserveHostHeader bool           `json:"preserveHostHeader,omitempty"`
 }
 
 type ResponsePayload struct {
