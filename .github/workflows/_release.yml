@@ -31,7 +31,7 @@ jobs:
         uses: azure/setup-helm@v5
 
       - name: Setup yq
-        uses: mikefarah/yq@v4.53.2
+        uses: mikefarah/yq@v4.53.3
 
       - name: Download binaries
         uses: actions/download-artifact@v8
