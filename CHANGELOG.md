@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.4.0
+
+## [0.4.0](https://github.com/wenisch-tech/proxera-agent/compare/v0.3.7...v0.4.0) (2026-06-06)
+
+
+### Features
+
+* Added support for optional per-Route Host Preservation for S3 Compatibility ([cb1f289](https://github.com/wenisch-tech/proxera-agent/commit/cb1f289ce110d6c46fb3b336312f33b67fbfa084))
+
+
+
+
 ## v0.3.7
 
 ### [0.3.7](https://github.com/wenisch-tech/proxera-agent/compare/v0.3.6...v0.3.7) (2026-06-02)

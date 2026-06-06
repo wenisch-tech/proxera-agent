@@ -1,6 +1,6 @@
 apiVersion: v2
 name: proxera-agent
 description: Proxera tunnel client
-version: 0.3.7
-appVersion: 0.3.7
+version: 0.4.0
+appVersion: 0.4.0
 type: application
