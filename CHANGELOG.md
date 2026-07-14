@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.4.3
+
+### [0.4.3](https://github.com/wenisch-tech/proxera-agent/compare/v0.4.2...v0.4.3) (2026-07-14)
+
+
+
+
 ## v0.4.1
 
 ### [0.4.1](https://github.com/wenisch-tech/proxera-agent/compare/v0.4.0...v0.4.1) (2026-06-08)

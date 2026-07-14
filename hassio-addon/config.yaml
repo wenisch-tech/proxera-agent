@@ -1,5 +1,5 @@
 name: "Proxera Agent"
-version: "0.4.1"
+version: "0.4.3"
 slug: proxera_agent
 description: "WebSocket tunnel client that proxies inbound tunnel requests to local HTTP services."
 url: "https://github.com/wenisch-tech/proxera-agent/tree/main/hassio-addon"
